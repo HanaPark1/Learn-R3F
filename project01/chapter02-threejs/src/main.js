@@ -122,12 +122,43 @@ extrudeMesh.castShadow = true;
 extrudeMesh.receiveShadow = true;
 scene.add(extrudeMesh);
 
-//sphereMesh
+//sphereMesh (구)
 const sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
 const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x98daaf});
 const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphereMesh.position.set(0,1,-3);
-scene.add(sphereMesh);
+// scene.add(sphereMesh);
+
+const numPoints = 1000; // 점의 개수
+const positions = new Float32Array(numPoints * 3); 
+// 포인트의 좌표를 지정하기 위한 array 
+// 점 하나당 x,y,z 즉 세개의 값이 필요하여 *3 진행 
+
+for (let i=0; i<numPoints; i++) {
+  const x = (Math.random() - 0.5) *1; 
+  const y = (Math.random() - 0.5) *1; 
+  const z = (Math.random() - 0.5) *1; 
+
+  positions[i*3] = x;
+  positions[i*3+1] = y;
+  positions[i*3+2] = z;
+}
+
+// bufferGeometry (일반 지오메트리랑 다르게 GPU 사용해서 렌더링에 효율적)
+const bufferGeometry = new THREE.BufferGeometry();
+bufferGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positions, 3)
+);
+
+const pointsMaterial = new THREE.PointsMaterial({
+  color: 0xffff00,
+  size: 0.05,
+});
+
+const point = new THREE.Points(sphereGeometry, pointsMaterial);
+point.position.set(0,0,-5);
+scene.add(point);
 
 
 // 자유자재로 카메라 시점 변경
