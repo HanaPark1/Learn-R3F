@@ -6,6 +6,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 const renderer = new THREE.WebGLRenderer({antialias: true});
 // 그림자 반영
 renderer.shadowMap.enabled = true;
+// 성능에 따라 그림자 반영 차이
+// renderer.shadowMap.type = THREE.BasicShadowMap;
+// renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // 렌더러 사이즈 화면 크기만큼 조절
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -35,65 +39,36 @@ floor.castShadow = true;
 scene.add(floor);
 
 const boxGeometry = new THREE.BoxGeometry(1,1,1);
-const boxMaterial = new THREE.MeshStandardMaterial({color:0xfffff});
+const boxMaterial = new THREE.MeshStandardMaterial({color:0xffff00});
 const boxMesh = new THREE.Mesh(boxGeometry,boxMaterial);
 boxMesh.castShadow = true;
 boxMesh.receiveShadow = true;
 boxMesh.position.y = 0.5;
 scene.add(boxMesh);
 
-// // 모든곳에서 동일한 밝기를 제공 (그림자 x)
-// const ambientLight = new THREE.AmbientLight(0xffffff,5);
-// scene.add(ambientLight);
+// directionalLight 
+const directionalLight = new THREE.DirectionalLight(0xffffff,5);
+directionalLight.castShadow = true;
+directionalLight.position.set(3,4,5);
+directionalLight.lookAt(0,0,0); // 원점 설정 (디폴트)
+// 그림자 퀄리티 개별 설정, 숫자가 커질수록 그림자 퀄리티도 높아짐
+directionalLight.shadow.mapSize.width = 4096;
+directionalLight.shadow.mapSize.height = 4096;
 
-// // directionalLight 
-// const directionalLight = new THREE.DirectionalLight(0xffffff,5);
-// directionalLight.castShadow = true;
-// directionalLight.position.set(3,4,5);
-// directionalLight.lookAt(0,0,0); // 원점 설정 (디폴트)
-// scene.add(directionalLight);
+// 그림자가 그려지는 범위 한정
+directionalLight.shadow.camera.top = 2;
+directionalLight.shadow.camera.bottom = -2;
+directionalLight.shadow.camera.left = -2;
+directionalLight.shadow.camera.right = 2;
 
-// // lighthelper(빛이 어디를 향하는지 방향 가이드 제공)
-// const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight,1);
-// scene.add(directionalLightHelper);
+directionalLight.shadow.camera.near = 0.1;
+directionalLight.shadow.camera.far = 100;
 
-// // hemisphereLight 하늘,지상색을 설정해 위아래로 빛을 비춤 (위아래 두가지 색으로 연출 시 사용)
-// const hemisphereLight = new THREE.HemisphereLight(0xb4a912, 0x12f34f, 5);
-// hemisphereLight.position.set(0,1,0);
-// hemisphereLight.lookAt(0,0,0);
-// scene.add(hemisphereLight);
+scene.add(directionalLight);
 
-// const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 1);
-// scene.add(hemisphereLightHelper);
-
-// //pointLight 무드등과 같은 라이트
-// // 흰색에 빛의 강도 5, 최대 거리 5까지 거리에 따라 4정도로 세기가 줄어들게
-// const pointLight = new THREE.PointLight(0xffffff, 5,5,4); 
-// pointLight.castShadow = true;
-// pointLight.position.set(1,1,1);
-// scene.add(pointLight);
-
-// const popointLightHelper = new THREE.PointLightHelper(pointLight, 1);
-// scene.add(popointLightHelper);
-
-// // rectAreaLight 사각형 판 모양에서 나오는 빛 (헬퍼 x, 그림자 x)
-// const rectAreaLight = new THREE.RectAreaLight(0xffffff, 5, 2,2);
-// rectAreaLight.position.set(0,1,2);
-// scene.add(rectAreaLight);
-
-// spotLight (룩앳 사용 ㄴ 타켓 사용)
-const targetObj = new THREE.Object3D();
-scene.add(targetObj);
-
-const spotLight = new THREE.SpotLight(0xffffff, 10, 100, Math.PI / 4, 1, 1);
-spotLight.castShadow = true;
-spotLight.position.set(0,3,0);
-spotLight.target = targetObj;
-spotLight.target.position.set(1,0,2);
-scene.add(spotLight);
-
-const spotLightHelper = new THREE.SpotLightHelper(spotLight);
-scene.add(spotLightHelper);
+// lighthelper(빛이 어디를 향하는지 방향 가이드 제공)
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight,1);
+scene.add(directionalLightHelper);
 
 // 자유자재로 카메라 시점 변경
 const orbitControls = new OrbitControls(camera, renderer.domElement);
