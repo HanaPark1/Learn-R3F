@@ -37,6 +37,7 @@ floor.rotation.x = -Math.PI / 2; // PI 180도, 총 90도 회전한 상태
 // 그림자를 받을 수 있게 설정해 주는 값
 floor.receiveShadow = true;
 floor.castShadow = true;
+floor.name = "FLOOR";
 scene.add(floor);
 
 const boxGeometry = new THREE.BoxGeometry(1,1,1);
@@ -67,10 +68,6 @@ directionalLight.shadow.camera.far = 100;
 
 scene.add(directionalLight);
 
-// lighthelper(빛이 어디를 향하는지 방향 가이드 제공)
-const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight,1);
-// scene.add(directionalLightHelper);
-
 // 비동기적 로드
 const gltfloader = new GLTFLoader();
 const gltf = await gltfloader.loadAsync("/dancer.glb");
@@ -93,16 +90,8 @@ scene.add(character);
 // 애니메이션 사용
 const mixer = new THREE.AnimationMixer(character);
 const action = mixer.clipAction(animationClips[3]);
-action.setLoop(THREE.LoopRepeat); // LoopOnce 한번만 실행 LoopRepeat 반복 LoopPingPong 처음->끝->처음 
-// action.setDuration(10); // 애니메이션 재생 속도
-// action.setEffectiveTimeScale(2); // 지정한 배수 속도로 진행
-action.setEffectiveWeight(1); // 액션의 분명함을 조절 (낮으면 대충, 높으면 확실하게)
+action.setLoop(THREE.LoopPingPong); // LoopOnce 한번만 실행 LoopRepeat 반복 LoopPingPong 처음->끝->처음 
 action.play();
-// 애니메이션 정지
-// setTimeout(() => {
-//   mixer.clipAction(animationClips[3]).paused = true;
-// }, 3000);
-
 
 // 자유자재로 카메라 시점 변경 (마우스로 이동)
 const orbitControls = new OrbitControls(camera, renderer.domElement);
@@ -110,6 +99,25 @@ const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
 // 기본값 0.05, 값이 작아질수록 부드럽게 진행 후 정지
 orbitControls.dampingFactor = 0.03;
+
+//rayCaster
+const newPosition = new THREE.Vector3(0,1,0);
+const rayCaster = new THREE.Raycaster();
+// 화면에 맞게 레이저를 보낼 준비
+renderer.domElement.addEventListener("pointerdown", (e) => {
+  const x = ( e.clientX / window.innerWidth ) * 2 - 1; // three.js상으로 환산한 x좌표
+  const y = -(( e.clientY / window.innerHeight ) * 2 - 1); //three.js상으로 환산한 y좌표
+
+  rayCaster.setFromCamera(new THREE.Vector2(x,y), camera);
+  // 통과하는 오브젝트 정보 추출
+  const intersects = rayCaster.intersectObjects(scene.children);
+
+  // find를 활용해 name이 FLOOR인 오브젝트만 필터링
+  const intersectFloor = intersects.find((i) => i.object.name === "FLOOR");
+  console.log("intersectFloor", intersectFloor);
+  newPosition.copy(intersectFloor.point); // newPosition에 intersectFloor.point값을 넣음
+  newPosition.y = 1;
+});
 
 // 화면 비율 조정 시 화면에 맞추어 renderer 설정, mesh 요소 비율 고정
 window.addEventListener("resize",() => {
@@ -122,7 +130,23 @@ window.addEventListener("resize",() => {
 // 델타 제공
 const clock = new THREE.Clock();
 // 브라우저 상에서 애니메이션 프레임을 효율적으로 그리게 해주는 requestAnimationFrame
+const targetVector = new THREE.Vector3();
 const render = () => {
+  character.lookAt(newPosition); // 모델이 클릭하는 좌표 바라봄
+  targetVector
+  // subVectors => newPosition에서 character.position을 뺀 벡터를 할당 (클릭 지점까지 가리키는 방향 생성)
+  .subVectors(newPosition, character.position) 
+  .normalize() // 그 벡터를 정규화
+  .multiplyScalar(0.01); // 벡터의 방향을 건들이지 않은 채 크기만 0.01배
+
+  //  클릭 위치까지 애니메이션이 동작하지 않은 채 이동
+  if(Math.abs(character.position.x - newPosition.x) >= 1 || 
+Math.abs(character.position.z - newPosition.z) >= 1) {
+  character.position.x += targetVector.x;
+  character.position.z += targetVector.z;
+  action.stop();
+}
+action.play();
   renderer.render(scene,camera);
   requestAnimationFrame(render); // 재귀적 호출
   orbitControls.update();
