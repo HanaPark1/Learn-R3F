@@ -2,10 +2,6 @@ import "./style.css";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { FlyControls } from "three/examples/jsm/controls/FlyControls.js";
-import { FirstPersonControls } from "three/examples/jsm/controls/FirstPersonControls.js";
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 
 // Renderer 생성 및 호출
 const renderer = new THREE.WebGLRenderer({antialias: true});
@@ -75,18 +71,12 @@ scene.add(directionalLight);
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight,1);
 // scene.add(directionalLightHelper);
 
-const gltfloader = new GLTFLoader();
-// gltfloader.load("/dancer.glb", (gltf) => {
-//   const character = gltf.scene;
-//   character.position.y = 0.8;
-//   character.scale.set(0.01,0.01,0.01);
-//   scene.add(character);
-// })
-
 // 비동기적 로드
+const gltfloader = new GLTFLoader();
 const gltf = await gltfloader.loadAsync("/dancer.glb");
-// console.log(gltf);
+console.log(gltf);
 const character = gltf.scene;
+const animationClips = gltf.animations;
 character.position.y = 0.8;
 character.scale.set(0.01,0.01,0.01);
 character.castShadow = true;
@@ -99,6 +89,19 @@ character.traverse((obj) => {
   }
 });
 scene.add(character);
+
+// 애니메이션 사용
+const mixer = new THREE.AnimationMixer(character);
+const action = mixer.clipAction(animationClips[3]);
+action.setLoop(THREE.LoopRepeat); // LoopOnce 한번만 실행 LoopRepeat 반복 LoopPingPong 처음->끝->처음 
+// action.setDuration(10); // 애니메이션 재생 속도
+// action.setEffectiveTimeScale(2); // 지정한 배수 속도로 진행
+action.setEffectiveWeight(1); // 액션의 분명함을 조절 (낮으면 대충, 높으면 확실하게)
+action.play();
+// 애니메이션 정지
+// setTimeout(() => {
+//   mixer.clipAction(animationClips[3]).paused = true;
+// }, 3000);
 
 
 // 자유자재로 카메라 시점 변경 (마우스로 이동)
@@ -123,7 +126,9 @@ const render = () => {
   renderer.render(scene,camera);
   requestAnimationFrame(render); // 재귀적 호출
   orbitControls.update();
-
+  if (mixer) {
+    mixer.update(clock.getDelta()); // 경과되는 시간을 넣어 줌
+  }
 }
 
 render();
