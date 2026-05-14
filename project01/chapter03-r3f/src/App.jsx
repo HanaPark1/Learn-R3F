@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import { MainCanvas } from "./components/MainCanvas"
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <>
-      <h1>r3f 기본 설정</h1>
-    </>
+    <div style={{width: "100vw", height: "100vh"}}>
+      <MainCanvas />
+    </div>
   )
 }
 
