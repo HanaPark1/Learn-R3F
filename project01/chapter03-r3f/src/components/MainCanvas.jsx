@@ -3,6 +3,7 @@ import { OrbitControls } from "@react-three/drei"
 import { Color } from "three";
 import { Meshes } from "./Meshes";
 import { Lights } from "./Lights";
+// import * as THREE from "three";
 
 export const MainCanvas = () => {
     return (
@@ -10,6 +11,8 @@ export const MainCanvas = () => {
         <Canvas 
         gl={{antialias: true}}
         shadows={"soft"} // 그림자 사용
+        // shadows={{enabled: true, type: THREE.PCFSoftShadowMap}} 우ㅣ와 동일
+        // shadows 위와 동일
         camera={{
             fov:60,
             aspect: window.innerWidth / window.innerHeight, // 카메라 비율
