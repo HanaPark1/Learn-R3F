@@ -4,6 +4,7 @@ import { Color } from "three";
 import { Meshes } from "./Meshes";
 import { Lights } from "./Lights";
 import { Controls } from "./Controls";
+import { GLBModel } from "./GLBModel";
 // import * as THREE from "three";
 
 export const MainCanvas = () => {
@@ -26,6 +27,7 @@ export const MainCanvas = () => {
             <Controls />
             <Lights/>
             <Meshes/>
+            <GLBModel/>
         </Canvas>
     );
 }

@@ -19,8 +19,8 @@ export const Lights = () => {
             shadow-camera-bottom={-25}
             shadow-camera-near={0.1}
             shadow-camera-far={1000}
-            shadow-mapSize-width={512}
-            shadow-mapSize-height={512}
+            shadow-mapSize-width={4096}
+            shadow-mapSize-height={4096}
             />
         </>
     )
