@@ -3,6 +3,7 @@ import { OrbitControls } from "@react-three/drei"
 import { Color } from "three";
 import { Meshes } from "./Meshes";
 import { Lights } from "./Lights";
+import { Controls } from "./Controls";
 // import * as THREE from "three";
 
 export const MainCanvas = () => {
@@ -22,8 +23,7 @@ export const MainCanvas = () => {
         }}
         scene={{background: new Color(0x000000)}}
         >
-            <OrbitControls />
-
+            <Controls />
             <Lights/>
             <Meshes/>
         </Canvas>
